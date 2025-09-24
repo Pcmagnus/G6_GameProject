@@ -27,7 +27,36 @@ void CheckCollision()
 
 void TitleScreen()
 {
-	
+	ClearBackground(RED);
+	for (int i = 0; i < 100; i++)
+	{
+		DrawText("High Score: ", 150 - 2 * i, 200 - 2 * i, 40, BLACK);
+		DrawText("Untitled Shooter Game", 150 - 2*i, 100 - 2*i, 80,BLACK);
+	}
+	DrawText("High Score: ", 150, 200, 40, WHITE);
+	DrawText("Untitled Shooter Game", 150, 100, 80, WHITE);
+
+	//Make Start Button
+
+	Vector2 ButtonPosition = {300,400};
+	Vector2 ButtonSize = {620,200};
+
+	Rectangle startButton = {ButtonPosition.x,ButtonPosition.y,ButtonSize.x,ButtonSize.y};
+	DrawRectangle(ButtonPosition.x,ButtonPosition.y,ButtonSize.x,ButtonSize.y,WHITE);
+	Vector2 mousePoint = GetMousePosition();
+
+	DrawText("Start", ButtonPosition.x + 2,ButtonPosition.y, 220, BLACK);
+
+	if (CheckCollisionPointRec(mousePoint, startButton))
+	{
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+		{
+			cout << "Start Game!!";
+			//screenMode = 1;
+		}
+	}
+
+	DrawText("CREDITS: Caleb Chilson, Magnus Helvig, Maksim Popovski, & Marcus Jakobsen", 50, 900, 30, WHITE);
 }
 
 void GameScreen()
@@ -40,7 +69,42 @@ void GameScreen()
 
 void DeathScreen()
 {
-	
+	ClearBackground(RED);
+	for (int i = 0; i < 180; i++)
+	{
+		DrawText("DESTROYED", 100 - 2*i, 100 - 2*i, 180, BLACK);
+
+		DrawText("Final Score: ", 100 - i, 300 - i, 80, BLACK);
+
+		DrawText("High Score: ", 100 - i, 400 - i, 80, BLACK);
+	}
+	DrawText("DESTROYED", 100, 100, 180, WHITE);
+
+	DrawText("Final Score: ", 100, 300, 80, WHITE);
+
+	DrawText("High Score: ", 100, 400, 80, WHITE);
+
+	//Make Start Button
+
+	Vector2 ButtonPosition = { 300,600 };
+	Vector2 ButtonSize = { 620,110 };
+
+	Rectangle startButton = { ButtonPosition.x,ButtonPosition.y,ButtonSize.x,ButtonSize.y };
+	DrawRectangle(ButtonPosition.x, ButtonPosition.y, ButtonSize.x, ButtonSize.y, WHITE);
+	Vector2 mousePoint = GetMousePosition();
+
+	DrawText("RESTART", ButtonPosition.x + 2, ButtonPosition.y, 124, BLACK);
+
+	if (CheckCollisionPointRec(mousePoint, startButton))
+	{
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+		{
+			cout << "Restart Game!!";
+			//screenMode = 1;
+		}
+	}
+
+	DrawText("CREDITS: Caleb Chilson, Magnus Helvig, Maksim Popovski, & Marcus Jakobsen", 50,900,30,WHITE);
 }
 
 
