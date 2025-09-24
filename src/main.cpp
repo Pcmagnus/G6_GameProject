@@ -10,6 +10,7 @@ vector<float> enemiesYPos = { 500 };
 float spawnTime = 0.5; //How much time it takes for a new enemy to spawn
 float enemyTimer = 0;
 float enemySpeed = 400;
+int enemySize = 50;
 
 void RenderBackground()
 {
@@ -25,7 +26,7 @@ void RenderEnemy()
 {
 	for (int i = 0; i < enemiesXPos.size(); i++) // Render the Enemies, then move them left
 	{
-		DrawCircle(enemiesXPos[i], enemiesYPos[i], 50, RED);
+		DrawCircle(enemiesXPos[i], enemiesYPos[i], enemySize, RED);
 		enemiesXPos[i] -= enemySpeed * GetFrameTime();
 	}
 
