@@ -1,5 +1,6 @@
 #include <raylib.h>
 #include <iostream>
+#include "Player/PLayer.h"
 
 using namespace std;
 
@@ -56,6 +57,10 @@ int main()
 
 	SetTargetFPS(60);
 
+	Player defaultPlayer;
+
+	defaultPlayer.SpawnPlayer(100, 400);
+
 	while (!WindowShouldClose())
 	{
 		//Initialize
@@ -64,6 +69,9 @@ int main()
 		ClearBackground(BLACK);
 
 		DrawFPS(100, 100);
+
+		defaultPlayer.RenderPlayer();
+		defaultPlayer.ControllPlayer();
 
 		//Gameplay
 		switch (ScreenMode)
