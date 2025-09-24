@@ -11,7 +11,6 @@ vector<float> enemiesYPos = { 500 };
 float spawnTime = 0.5; //How much time it takes for a new enemy to spawn
 float enemyTimer = 0;
 float enemySpeed = 400;
-int enemySize = 50;
 
 void RenderBackground()
 {
@@ -27,7 +26,7 @@ void RenderEnemy()
 {
 	for (int i = 0; i < enemiesXPos.size(); i++) // Render the Enemies, then move them left
 	{
-		DrawCircle(enemiesXPos[i], enemiesYPos[i], enemySize, RED);
+		DrawCircle(enemiesXPos[i], enemiesYPos[i], 50, RED);
 		enemiesXPos[i] -= enemySpeed * GetFrameTime();
 	}
 
@@ -165,13 +164,13 @@ int main()
 		ClearBackground(BLACK);
 
 		DrawFPS(100, 100);
-		
-		RenderEnemy;
-
-
 
 		defaultPlayer.RenderPlayer();
 		defaultPlayer.ControllPlayer();
+
+		
+
+
 
 		//Gameplay
 		switch (ScreenMode)
