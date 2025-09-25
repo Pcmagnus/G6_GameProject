@@ -19,6 +19,9 @@ public:
 
     float PlayerPositionX{ 100.f };
     float PlayerPositionY{ 100.f };
+    float PlayerHealth{ 100.f };
+    float PlayerHealthVisual{ 100.f }; // visual HP for smooth animation
+    float PlayerHealthDamage{ 100.f }; // red damage overlay
     float PlayerSpeed{ 500.f };
 
     Color PlayerColor{ BLUE };
