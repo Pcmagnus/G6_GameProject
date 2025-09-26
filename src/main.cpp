@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <iostream>
 #include "Player/Player.h"
+#include "Enemies/Enemies.h"
 #include <vector>
 
 using namespace std;
@@ -12,17 +13,11 @@ struct Bullet
     bool active = true; // For deleting bullets
 };
 vector<Bullet> bullets; // Store all bullets in a vector
-float shootCooldown = 0.15f; // Time between shots in seconds
+float shootCooldown = 0.25f; // Time between shots in seconds
 float shootTimer = 0.f;       // Timer to track shooting
 
 //Enemy Variables
-vector<float> enemiesXPos = { 1200 };
-vector<float> enemiesYPos = { 500 };
-vector<int> enemiesHP = { 3 };
-float spawnTime = 0.5f;   // How much time it takes for a new enemy to spawn
-float enemyTimer = 0;
-float enemySpeed = 400;
-
+EnemyManager enemyManager; // making an instance of the enemy manager
 
 // Score Variables
 float score = 0.0f;           // current score
@@ -77,37 +72,24 @@ void RenderPlayer()
 
 void RenderEnemy()
 {
-    for (int i = 0; i < enemiesXPos.size(); i++) // Render the Enemies, then move them left
-    {
-        DrawCircle(enemiesXPos[i], enemiesYPos[i], 50, RED);
-        enemiesXPos[i] -= enemySpeed * GetFrameTime();
-    }
 
-    if (enemyTimer > spawnTime) // if 1 second has passed spawn a new enemy
-    {
-        enemyTimer = 0;
-        enemiesXPos.push_back(1280 + 50);
-        enemiesYPos.push_back(GetRandomValue(20 + 50, 1024 - 20 - 50)); // randomly spawned enemy on y axis
-        enemiesHP.push_back(GetRandomValue(1, 5)); // new enemy HP
-    }
-    enemyTimer += GetFrameTime();
 }
+
+
 
 void CheckCollision(Player& defaultPlayer)
 {
-    for (int i = 0; i < enemiesXPos.size(); i++)
+    for (int i = 0; i < enemyManager.enemies.size(); i++)
     {
-        float dx = defaultPlayer.PlayerPositionX - enemiesXPos[i];
-        float dy = defaultPlayer.PlayerPositionY - enemiesYPos[i];
+        float dx = defaultPlayer.PlayerPositionX - enemyManager.enemies[i].x;
+        float dy = defaultPlayer.PlayerPositionY - enemyManager.enemies[i].y;
         float distance = sqrt(dx * dx + dy * dy);
 
-        if (distance < defaultPlayer.PlayerRadius + 50) // 50 = enemy radius
+        if (distance < defaultPlayer.PlayerRadius + 50) // enemy radius
         {
-            defaultPlayer.PlayerHealth -= 10; // decrease health
-            enemiesXPos.erase(enemiesXPos.begin() + i); // remove enemy
-            enemiesYPos.erase(enemiesYPos.begin() + i);
-            enemiesHP.erase(enemiesHP.begin() + i); // remove corresponding HP
-            i--; // adjust index after erase
+            defaultPlayer.PlayerHealth -= 20;           // decrease health
+            enemyManager.enemies.erase(enemyManager.enemies.begin() + i); // remove enemy
+            i--;                                       // adjust index
         }
     }
 }
@@ -121,11 +103,11 @@ void TitleScreen(int& ScreenMode)
     for (int i = 0; i < 100; i++)
     {
         DrawText(TextFormat("High Score: %i", highScore), 150 - 2 * i, 200 - 2 * i, 40, BLACK);
-        DrawText("Untitled Shooter Game", 150 - 2 * i, 100 - 2 * i, 80, BLACK);
+        DrawText("Galactic Transit", 150 - 2 * i, 100 - 2 * i, 80, BLACK);
     }
 
     DrawText(TextFormat("High Score: %i", highScore), 150, 200, 40, WHITE);
-    DrawText("Untitled Shooter Game", 150, 100, 80, WHITE);
+    DrawText("Galactic Transit", 150, 100, 80, WHITE);
 
     // Make Start Button
     Vector2 ButtonPosition = { 300, 400 };
@@ -141,10 +123,7 @@ void TitleScreen(int& ScreenMode)
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // one click only
         {
             score = 0.0f; // reset score when starting a new game
-            enemyTimer = 0.0f; // reset enemy timer so spawn timing is consistent
-            enemiesXPos.clear();
-            enemiesYPos.clear();
-            enemiesHP.clear();
+			enemyManager.Clear(); // clear any enemies from previous run
             bullets.clear();
             ScreenMode = 1; // start the game
         }
@@ -158,6 +137,8 @@ void GameScreen(Player& defaultPlayer, int& ScreenMode)
     RenderBackground();   // Background effect
     defaultPlayer.RenderPlayer();
     defaultPlayer.ControllPlayer();
+    enemyManager.Update(GetFrameTime());
+    enemyManager.Render();
 
     shootTimer += GetFrameTime(); // Update shoot timer
 
@@ -193,23 +174,21 @@ void GameScreen(Player& defaultPlayer, int& ScreenMode)
     // Check bullet collisions with enemies
     for (int i = 0; i < bullets.size(); i++)
     {
-        for (int j = 0; j < enemiesXPos.size(); j++)
+        for (int j = 0; j < enemyManager.enemies.size(); j++)
         {
-            float dx = bullets[i].x - enemiesXPos[j];
-            float dy = bullets[i].y - enemiesYPos[j];
+            float dx = bullets[i].x - enemyManager.enemies[j].x;
+            float dy = bullets[i].y - enemyManager.enemies[j].y;
             float distance = sqrt(dx * dx + dy * dy);
 
-            if (distance < 50 + 5) // enemy radius + bullet radius
+            if (distance < 50 + 5)
             {
                 bullets[i].active = false;
-                enemiesHP[j] -= 1; // decrease HP
-                if (enemiesHP[j] <= 0) // remove enemy if HP <= 0
+                enemyManager.enemies[j].hp -= 1;
+                if (enemyManager.enemies[j].hp <= 0)
                 {
-                    score += (float)enemyKillPoints; // add points for kill
-                    enemiesXPos.erase(enemiesXPos.begin() + j);
-                    enemiesYPos.erase(enemiesYPos.begin() + j);
-                    enemiesHP.erase(enemiesHP.begin() + j);
-                    j--; // adjust index after erase
+                    score += enemyManager.enemies[j].scoreReward;
+                    enemyManager.enemies.erase(enemyManager.enemies.begin() + j);
+                    j--;
                 }
             }
         }
@@ -287,11 +266,8 @@ void DeathScreen(Player& defaultPlayer, int& ScreenMode)
             score = 0.0f;                          // reset current score
             defaultPlayer.PlayerHealth = 100;     // reset health
             defaultPlayer.SpawnPlayer(100, 400);  // reset position
-            enemiesXPos.clear();                  // clear enemies
-            enemiesYPos.clear();
-            enemiesHP.clear();                    // clear enemy HP vector too
+			enemyManager.Clear();                 // clear enemies from previous run
             bullets.clear();                      // clear bullets from previous run
-            enemyTimer = 0.0f;                    // reset enemy timer
             ScreenMode = 1;                       // go back to game
             cout << "Restart Game!!";
         }
@@ -310,7 +286,7 @@ int main()
     float windowWidth = 1280;
     float windowHeight = 1024;
 
-    InitWindow(windowWidth, windowHeight, "Untitled Shooter Game");
+    InitWindow(windowWidth, windowHeight, "Galactic Transit");
 
     SetTargetFPS(60);
 
