@@ -19,10 +19,18 @@ float shootTimer = 0.f;       // Timer to track shooting
 vector<float> enemiesXPos = { 1200 };
 vector<float> enemiesYPos = { 500 };
 vector<int> enemiesHP = { 3 };
-
 float spawnTime = 0.5f;   // How much time it takes for a new enemy to spawn
 float enemyTimer = 0;
 float enemySpeed = 400;
+
+
+// Score Variables
+float score = 0.0f;           // current score
+int finalScore = 0;           // score from the last finished run
+int highScore = 0;            // best score across all runs
+float survivalPointsRate = 10.0f; // points per second survived
+int enemyKillPoints = 25;    // points per enemy killed
+
 
 //Background Variables
 struct Star {
@@ -112,12 +120,11 @@ void TitleScreen(int& ScreenMode)
 
     for (int i = 0; i < 100; i++)
     {
-        DrawText("High Score: ", 150 - 2 * i, 200 - 2 * i, 40, BLACK);
+        DrawText(TextFormat("High Score: %i", highScore), 150 - 2 * i, 200 - 2 * i, 40, BLACK);
         DrawText("Untitled Shooter Game", 150 - 2 * i, 100 - 2 * i, 80, BLACK);
     }
 
-
-    DrawText("High Score: ", 150, 200, 40, WHITE);
+    DrawText(TextFormat("High Score: %i", highScore), 150, 200, 40, WHITE);
     DrawText("Untitled Shooter Game", 150, 100, 80, WHITE);
 
     // Make Start Button
@@ -133,6 +140,12 @@ void TitleScreen(int& ScreenMode)
     {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // one click only
         {
+            score = 0.0f; // reset score when starting a new game
+            enemyTimer = 0.0f; // reset enemy timer so spawn timing is consistent
+            enemiesXPos.clear();
+            enemiesYPos.clear();
+            enemiesHP.clear();
+            bullets.clear();
             ScreenMode = 1; // start the game
         }
     }
@@ -192,6 +205,7 @@ void GameScreen(Player& defaultPlayer, int& ScreenMode)
                 enemiesHP[j] -= 1; // decrease HP
                 if (enemiesHP[j] <= 0) // remove enemy if HP <= 0
                 {
+                    score += (float)enemyKillPoints; // add points for kill
                     enemiesXPos.erase(enemiesXPos.begin() + j);
                     enemiesYPos.erase(enemiesYPos.begin() + j);
                     enemiesHP.erase(enemiesHP.begin() + j);
@@ -200,6 +214,11 @@ void GameScreen(Player& defaultPlayer, int& ScreenMode)
             }
         }
     }
+
+    // Score from survival time
+    score += survivalPointsRate * GetFrameTime();
+    DrawText(TextFormat("Score: %i", (int)score), 1000, 50, 40, WHITE);
+
 
     // HP-bar animation
     float lerpSpeed = 8.0f * GetFrameTime(); // animatiom speed for HP bar
@@ -228,6 +247,8 @@ void GameScreen(Player& defaultPlayer, int& ScreenMode)
     // Check if player died
     if (defaultPlayer.PlayerHealth <= 0)
     {
+        finalScore = (int)score; // save final score
+        if (finalScore > highScore) highScore = finalScore; // update high score
         ScreenMode = 2;   // go to DeathScreen
     }
 }
@@ -239,15 +260,15 @@ void DeathScreen(Player& defaultPlayer, int& ScreenMode)
     {
         DrawText("DESTROYED", 100 - 2 * i, 100 - 2 * i, 180, BLACK);
 
-        DrawText("Final Score: ", 100 - i, 300 - i, 80, BLACK);
+        DrawText(TextFormat("Final Score: %i", finalScore), 100 - i, 300 - i, 80, BLACK);
 
-        DrawText("High Score: ", 100 - i, 400 - i, 80, BLACK);
+        DrawText(TextFormat("High Score: %i", highScore), 100 - i, 400 - i, 80, BLACK);
     }
     DrawText("DESTROYED", 100, 100, 180, WHITE);
 
-    DrawText("Final Score: ", 100, 300, 80, WHITE);
+    DrawText(TextFormat("Final Score: %i", finalScore), 100, 300, 80, WHITE);
 
-    DrawText("High Score: ", 100, 400, 80, WHITE);
+    DrawText(TextFormat("High Score: %i", highScore), 100, 400, 80, WHITE);
 
     //Make Start Button
     Vector2 ButtonPosition = { 300,600 };
@@ -263,13 +284,16 @@ void DeathScreen(Player& defaultPlayer, int& ScreenMode)
     {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
-            defaultPlayer.PlayerHealth = 100;          // reset health
-            defaultPlayer.SpawnPlayer(100, 400);       // reset position
-            enemiesXPos.clear();                        // clear enemies
+            score = 0.0f;                          // reset current score
+            defaultPlayer.PlayerHealth = 100;     // reset health
+            defaultPlayer.SpawnPlayer(100, 400);  // reset position
+            enemiesXPos.clear();                  // clear enemies
             enemiesYPos.clear();
-            ScreenMode = 1;                             // go back to game
+            enemiesHP.clear();                    // clear enemy HP vector too
+            bullets.clear();                      // clear bullets from previous run
+            enemyTimer = 0.0f;                    // reset enemy timer
+            ScreenMode = 1;                       // go back to game
             cout << "Restart Game!!";
-            //screenMode = 1;
         }
     }
 
