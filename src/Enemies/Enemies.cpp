@@ -69,7 +69,7 @@ void EnemyManager::Update(float deltaTime)
         enemies.push_back(Enemy(1280 + 50, yPos, EnemyType::SlowStraight));
     }
 
-    // FastStraight: spawn every 0.7s after 30s
+    // FastStraight: spawn every 0.7s after 30s in game
     if (enemyTimer >= 30.f && spawnTimerFast >= 0.7f)
     {
         spawnTimerFast = 0.f;
@@ -77,7 +77,7 @@ void EnemyManager::Update(float deltaTime)
         enemies.push_back(Enemy(1280 + 50, yPos, EnemyType::FastStraight));
     }
 
-    // Wave: spawn every 1.0s after 50s
+    // Wave: spawn every 1.0s after 50s in game
     if (enemyTimer >= 50.f && spawnTimerWave >= 1.0f)
     {
         spawnTimerWave = 0.f;
