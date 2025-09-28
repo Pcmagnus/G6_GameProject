@@ -168,8 +168,7 @@ void GameScreen(Player& defaultPlayer, int& ScreenMode)
     }
 
     // Remove inactive bullets
-    bullets.erase(remove_if(bullets.begin(), bullets.end(),
-        [](Bullet& b) { return !b.active; }), bullets.end());
+    bullets.erase(remove_if(bullets.begin(), bullets.end(), [](Bullet& b) { return !b.active; }), bullets.end());
 
     // Check bullet collisions with enemies
     for (int i = 0; i < bullets.size(); i++)
@@ -333,4 +332,4 @@ int main()
 
 
 
-
+
